@@ -5,8 +5,8 @@ export type TSiteBrand = {
 };
 
 const DEFAULT_BRAND: TSiteBrand = {
-    name: 'DBOTSPACE',
-    title: 'DBOTSPACE - Professional Trading Bot Builder & Copy Trading Platform',
+    name: 'THEGOAT',
+    title: 'THEGOAT - Professional Trading Bot Builder & Copy Trading Platform',
     description:
         'Create profitable trading bots without coding. Professional Deriv trading bot builder with copy trading, free bots, and advanced strategies. Start trading smarter today!',
 };
