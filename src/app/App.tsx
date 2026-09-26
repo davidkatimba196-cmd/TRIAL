@@ -9,6 +9,7 @@ import RoutePromptDialog from '@/components/route-prompt-dialog';
 import { getBotsManifest, prefetchAllXmlInBackground } from '@/utils/freebots-cache';
 import { crypto_currencies_display_order, fiat_currencies_display_order } from '@/components/shared';
 import { forceUpdateAppId } from '@/components/shared/utils/config/config';
+import { applySiteBranding } from '@/utils/site-branding';
 import { observer as globalObserver } from '@/external/bot-skeleton/utils/observer';
 import { StoreProvider } from '@/hooks/useStore';
 import CallbackPage from '@/pages/callback';
@@ -122,6 +123,9 @@ function App() {
     React.useEffect(() => {
         // Force update app ID in localStorage to ensure we use the current config value
         forceUpdateAppId();
+
+        // Swap title/meta tags for white-label domains that have their own brand identity
+        applySiteBranding();
 
         // Use the invalid token handler hook to automatically retrigger OIDC authentication
         // when an invalid token is detected and the cookie logged state is true
