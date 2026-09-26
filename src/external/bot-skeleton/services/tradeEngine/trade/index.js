@@ -99,7 +99,7 @@ export default class TradeEngine extends Balance(Purchase(Sell(OpenContract(Prop
         const showAsCR = typeof window !== 'undefined' ? localStorage.getItem('show_as_cr') : null;
         const currentLoginId = api_base.account_info?.loginid || this.accountInfo?.loginid;
         const displayedAccount = showAsCR || currentLoginId;
-        
+
         // Only check if it's a special CR account - don't interfere with normal accounts
         if (showAsCR && typeof isSpecialCRAccount === 'function') {
             const isSpecialCR = isSpecialCRAccount(displayedAccount);

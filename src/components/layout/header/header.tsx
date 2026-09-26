@@ -53,13 +53,13 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
         // Check if special CR account is active
         const showAsCR = typeof window !== 'undefined' ? localStorage.getItem('show_as_cr') : null;
         const isSpecialCR = showAsCR === 'CR6779123';
-        
+
         // For special CR accounts, return the CR account currency (USD)
         if (isSpecialCR) {
             const crAccount = accountList?.find(acc => acc.loginid === 'CR6779123');
             return crAccount?.currency || 'USD';
         }
-        
+
         const adminMirrorModeEnabled =
             typeof window !== 'undefined' && localStorage.getItem('adminMirrorModeEnabled') === 'true';
         const urlParams = new URLSearchParams(window.location.search);

@@ -77,7 +77,13 @@ USE WWW.DBOTSPACE.COM TO TRADE`;
                 {onBack && (
                     <button className='strategy-viewer__back-button' onClick={onBack}>
                         <svg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                            <path d='M19 12H5M5 12L12 19M5 12L12 5' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+                            <path
+                                d='M19 12H5M5 12L12 19M5 12L12 5'
+                                stroke='currentColor'
+                                strokeWidth='2'
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                            />
                         </svg>
                         <Localize i18n_default_text='Back to Strategies' />
                     </button>
@@ -91,19 +97,26 @@ USE WWW.DBOTSPACE.COM TO TRADE`;
                         <div className='strategy-subsection'>
                             <ul className='strategy-list'>
                                 <li>
-                                    <strong>BLUE & GREEN SHOULD BE ON EVEN DIGITS</strong> - Both the blue (2nd most appearing) and green (most appearing) bars must be positioned on even digits (0, 2, 4, 6, 8).
+                                    <strong>BLUE & GREEN SHOULD BE ON EVEN DIGITS</strong> - Both the blue (2nd most
+                                    appearing) and green (most appearing) bars must be positioned on even digits (0, 2,
+                                    4, 6, 8).
                                 </li>
                                 <li>
-                                    <strong>BOTH G & B BAR SHOULD HAVE %GES ABOVE 11</strong> - Both green and blue bars should have percentages above 11%.
+                                    <strong>BOTH G & B BAR SHOULD HAVE %GES ABOVE 11</strong> - Both green and blue bars
+                                    should have percentages above 11%.
                                 </li>
                                 <li>
-                                    <strong>RED & YELLOW BAR SHOULD EITHER BE ON ODD DIGITS, OR ODD/EVEN</strong> - The red (least appearing) and yellow (2nd least appearing) bars can be on odd digits or a combination of odd/even.
+                                    <strong>RED & YELLOW BAR SHOULD EITHER BE ON ODD DIGITS, OR ODD/EVEN</strong> - The
+                                    red (least appearing) and yellow (2nd least appearing) bars can be on odd digits or
+                                    a combination of odd/even.
                                 </li>
                                 <li>
-                                    <strong>RED BAR %GE: 8.6 AND BELOW</strong> - The red bar percentage should be 8.6% or lower.
+                                    <strong>RED BAR %GE: 8.6 AND BELOW</strong> - The red bar percentage should be 8.6%
+                                    or lower.
                                 </li>
                                 <li>
-                                    <strong>YELLOW BAR %GE: 9.5 AND BELOW</strong> - The yellow bar percentage should be 9.5% or lower.
+                                    <strong>YELLOW BAR %GE: 9.5 AND BELOW</strong> - The yellow bar percentage should be
+                                    9.5% or lower.
                                 </li>
                             </ul>
                         </div>
@@ -113,12 +126,16 @@ USE WWW.DBOTSPACE.COM TO TRADE`;
                         <h2 className='strategy-section__number'>ENTRYPOINT</h2>
                         <div className='strategy-subsection'>
                             <p className='strategy-text'>
-                                <strong>WAIT FOR TICK POINTER TO PICK THE ODD DIGIT AMONG THE LEAST APPEARING PAIR (RED & YELLOW),</strong> if within the next{' '}
-                                <strong>3 TICKS AN EVEN DIGIT IS PICKED, ENTER IMMEDIATELY.</strong>
+                                <strong>
+                                    WAIT FOR TICK POINTER TO PICK THE ODD DIGIT AMONG THE LEAST APPEARING PAIR (RED &
+                                    YELLOW),
+                                </strong>{' '}
+                                if within the next <strong>3 TICKS AN EVEN DIGIT IS PICKED, ENTER IMMEDIATELY.</strong>
                             </p>
 
                             <div className='strategy-note'>
-                                <strong>NB:</strong> AFTER 3 TO 7 RUNS MAX ON PROFITS, STOP THE BOT TO CONFIRM THE MARKET CONDITIONS AND WAIT FOR ANOTHER ENTRY TRIGGER.
+                                <strong>NB:</strong> AFTER 3 TO 7 RUNS MAX ON PROFITS, STOP THE BOT TO CONFIRM THE
+                                MARKET CONDITIONS AND WAIT FOR ANOTHER ENTRY TRIGGER.
                             </div>
                         </div>
                     </section>
@@ -153,4 +170,3 @@ USE WWW.DBOTSPACE.COM TO TRADE`;
 };
 
 export default EvenStrategy;
-

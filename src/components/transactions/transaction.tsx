@@ -163,13 +163,23 @@ const Transaction = ({ contract, active_transaction_id, onClickTransaction }: TT
             zIndex={popover_zindex.TRANSACTION.toString()}
             alignment={isDbotRTL() ? 'right' : 'left'}
             className='transactions__item-wrapper'
-            is_open={!!(contract && active_transaction_id === (contract?.display_transaction_ids?.buy ?? contract?.transaction_ids?.buy))}
+            is_open={
+                !!(
+                    contract &&
+                    active_transaction_id === (contract?.display_transaction_ids?.buy ?? contract?.transaction_ids?.buy)
+                )
+            }
             message={contract && <PopoverContent contract={contract} />}
         >
             <div
                 data-testid='dt_transactions_item'
                 className='transactions__item'
-                onClick={() => onClickTransaction && onClickTransaction((contract?.display_transaction_ids?.buy ?? contract?.transaction_ids?.buy) || null)}
+                onClick={() =>
+                    onClickTransaction &&
+                    onClickTransaction(
+                        (contract?.display_transaction_ids?.buy ?? contract?.transaction_ids?.buy) || null
+                    )
+                }
             >
                 <div className='transactions__cell transactions__trade-type'>
                     <div className='transactions__loader-container'>

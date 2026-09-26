@@ -38,10 +38,10 @@ git push
 1. Open DerivForge: `http://localhost:3000/deployments`
 2. Click **"+ Create New Site"**
 3. Fill in the form:
-   - Site Name: "My Custom Bot"
-   - App ID: Your Deriv API App ID
-   - Colors: Pick your brand colors
-   - Domain: Your custom domain (optional)
+    - Site Name: "My Custom Bot"
+    - App ID: Your Deriv API App ID
+    - Colors: Pick your brand colors
+    - Domain: Your custom domain (optional)
 4. Click **"Create Site Configuration"**
 
 ### Automatic Deployment
@@ -64,9 +64,9 @@ git push
 Each site automatically gets:
 
 - **App ID**: From your configuration
-- **Primary Color**: Applied to buttons, links, highlights  
-- **Secondary Color**: Applied to accents, hover states  
-- **Site Name**: Shown in the title and branding  
+- **Primary Color**: Applied to buttons, links, highlights
+- **Secondary Color**: Applied to accents, hover states
+- **Site Name**: Shown in the title and branding
 - **Domain**: Used for routing (if applicable)
 
 ## 🔄 Updating a Site
@@ -127,7 +127,7 @@ Appwrite Hosting / CDN
 ✅ **Custom branding per site**  
 ✅ **Fully automated deployments**  
 ✅ **No manual configuration**  
-✅ **Database-driven**  
+✅ **Database-driven**
 
 ## 📝 Notes
 

@@ -90,7 +90,10 @@ export default function MobileTransactionCards({ transaction }: { transaction: T
                 />
             </div>
             <div className={`${PARENT_CLASS}__card__row`}>
-                <CardColumn title='Ref. ID' label={transaction?.display_transaction_ids?.buy ?? transaction?.transaction_ids?.buy} />
+                <CardColumn
+                    title='Ref. ID'
+                    label={transaction?.display_transaction_ids?.buy ?? transaction?.transaction_ids?.buy}
+                />
             </div>
             <div className={`${PARENT_CLASS}__card__row`}>
                 <CardColumn

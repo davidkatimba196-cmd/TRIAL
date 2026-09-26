@@ -15,8 +15,8 @@ const Strategies: React.FC = () => {
     useEffect(() => {
         const enableScrolling = () => {
             // Method 1: Find by strategies element
-            const strategiesElement = document.querySelector('.strategies--standalone') || 
-                                     document.querySelector('.strategies');
+            const strategiesElement =
+                document.querySelector('.strategies--standalone') || document.querySelector('.strategies');
             if (strategiesElement) {
                 // Find the closest tab content parent
                 let parent = strategiesElement.parentElement;
@@ -25,7 +25,7 @@ const Strategies: React.FC = () => {
                     parent = parent.parentElement;
                     depth++;
                 }
-                
+
                 if (parent) {
                     parent.classList.add('strategies-tab-active');
                     const parentEl = parent as HTMLElement;
@@ -37,12 +37,12 @@ const Strategies: React.FC = () => {
                     parentEl.style.maxHeight = 'calc(100vh - 3.5rem - 6rem)';
                 }
             }
-            
+
             // Method 2: Find all tab contents and check which one contains strategies
             const allTabContents = document.querySelectorAll('.dc-tabs__content');
-            allTabContents.forEach((tabContent) => {
-                const hasStrategies = tabContent.querySelector('.strategies--standalone') || 
-                                     tabContent.querySelector('.strategies');
+            allTabContents.forEach(tabContent => {
+                const hasStrategies =
+                    tabContent.querySelector('.strategies--standalone') || tabContent.querySelector('.strategies');
                 if (hasStrategies) {
                     tabContent.classList.add('strategies-tab-active');
                     const tabEl = tabContent as HTMLElement;
@@ -58,16 +58,16 @@ const Strategies: React.FC = () => {
 
         // Run immediately
         enableScrolling();
-        
+
         // Also run after delays to ensure DOM is ready
         const timeoutId1 = setTimeout(enableScrolling, 100);
         const timeoutId2 = setTimeout(enableScrolling, 500);
-        
+
         return () => {
             clearTimeout(timeoutId1);
             clearTimeout(timeoutId2);
             const allTabContents = document.querySelectorAll('.dc-tabs__content');
-            allTabContents.forEach((tabContent) => {
+            allTabContents.forEach(tabContent => {
                 tabContent.classList.remove('strategies-tab-active');
                 const tabEl = tabContent as HTMLElement;
                 tabEl.style.overflowY = '';
@@ -106,13 +106,7 @@ const Strategies: React.FC = () => {
     // Icon components
     const OverUnderIcon = ({ fill }: { fill: string }) => (
         <svg width='32' height='32' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'>
-            <path
-                d='M2 12L6 8L9 11L14 6'
-                stroke={fill}
-                strokeWidth='2'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-            />
+            <path d='M2 12L6 8L9 11L14 6' stroke={fill} strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
             <path d='M14 6H10V10' stroke={fill} strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
         </svg>
     );
@@ -136,10 +130,7 @@ const Strategies: React.FC = () => {
 
     const HitAndRunIcon = ({ fill }: { fill: string }) => (
         <svg width='32' height='32' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'>
-            <path
-                d='M8 2L3 7H7V14H9V7H13L8 2Z'
-                fill={fill}
-            />
+            <path d='M8 2L3 7H7V14H9V7H13L8 2Z' fill={fill} />
         </svg>
     );
 
@@ -171,13 +162,22 @@ const Strategies: React.FC = () => {
                         <p className='strategies__card-description'>
                             <Localize i18n_default_text='Predict if price will finish above or below target' />
                         </p>
-                        <button
-                            className='strategies__card-button'
-                            onClick={() => handleExploreClick('over-under')}
-                        >
+                        <button className='strategies__card-button' onClick={() => handleExploreClick('over-under')}>
                             <Localize i18n_default_text='Explore Strategy' />
-                            <svg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                                <path d='M5 12H19M19 12L12 5M19 12L12 19' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+                            <svg
+                                width='16'
+                                height='16'
+                                viewBox='0 0 24 24'
+                                fill='none'
+                                xmlns='http://www.w3.org/2000/svg'
+                            >
+                                <path
+                                    d='M5 12H19M19 12L12 5M19 12L12 19'
+                                    stroke='currentColor'
+                                    strokeWidth='2'
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                />
                             </svg>
                         </button>
                     </div>
@@ -193,13 +193,22 @@ const Strategies: React.FC = () => {
                         <p className='strategies__card-description'>
                             <Localize i18n_default_text='Forecast whether the final digit will be odd' />
                         </p>
-                        <button
-                            className='strategies__card-button'
-                            onClick={() => handleExploreClick('odd')}
-                        >
+                        <button className='strategies__card-button' onClick={() => handleExploreClick('odd')}>
                             <Localize i18n_default_text='Explore Strategy' />
-                            <svg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                                <path d='M5 12H19M19 12L12 5M19 12L12 19' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+                            <svg
+                                width='16'
+                                height='16'
+                                viewBox='0 0 24 24'
+                                fill='none'
+                                xmlns='http://www.w3.org/2000/svg'
+                            >
+                                <path
+                                    d='M5 12H19M19 12L12 5M19 12L12 19'
+                                    stroke='currentColor'
+                                    strokeWidth='2'
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                />
                             </svg>
                         </button>
                     </div>
@@ -215,13 +224,22 @@ const Strategies: React.FC = () => {
                         <p className='strategies__card-description'>
                             <Localize i18n_default_text='Forecast whether the final digit will be even' />
                         </p>
-                        <button
-                            className='strategies__card-button'
-                            onClick={() => handleExploreClick('even')}
-                        >
+                        <button className='strategies__card-button' onClick={() => handleExploreClick('even')}>
                             <Localize i18n_default_text='Explore Strategy' />
-                            <svg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                                <path d='M5 12H19M19 12L12 5M19 12L12 19' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+                            <svg
+                                width='16'
+                                height='16'
+                                viewBox='0 0 24 24'
+                                fill='none'
+                                xmlns='http://www.w3.org/2000/svg'
+                            >
+                                <path
+                                    d='M5 12H19M19 12L12 5M19 12L12 19'
+                                    stroke='currentColor'
+                                    strokeWidth='2'
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                />
                             </svg>
                         </button>
                     </div>
@@ -236,8 +254,20 @@ const Strategies: React.FC = () => {
                             onClick={() => handleExploreClick('hit-and-run')}
                         >
                             <Localize i18n_default_text='Explore Strategy' />
-                            <svg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                                <path d='M5 12H19M19 12L12 5M19 12L12 19' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' />
+                            <svg
+                                width='16'
+                                height='16'
+                                viewBox='0 0 24 24'
+                                fill='none'
+                                xmlns='http://www.w3.org/2000/svg'
+                            >
+                                <path
+                                    d='M5 12H19M19 12L12 5M19 12L12 19'
+                                    stroke='currentColor'
+                                    strokeWidth='2'
+                                    strokeLinecap='round'
+                                    strokeLinejoin='round'
+                                />
                             </svg>
                         </button>
                         <h3 className='strategies__card-title'>

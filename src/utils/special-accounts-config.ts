@@ -17,7 +17,7 @@ export interface SpecialAccountConfig {
 export const SPECIAL_CR_ACCOUNTS: SpecialAccountConfig[] = [
     {
         loginid: 'CR6779123',
-        subtract: 8000.00, // Adjust this amount as needed - balance will be: VRTC10109979 balance - 8000
+        subtract: 8000.0, // Adjust this amount as needed - balance will be: VRTC10109979 balance - 8000
         demoAccountId: 'VRTC10109979', // The demo account to use for trading
         description: 'Main CR Account - Shares balance with VRTC10109979 demo account',
     },
@@ -52,4 +52,3 @@ export const getDemoAccountIdForSpecialCR = (loginid: string): string | null => 
     const config = getSpecialAccountConfig(loginid);
     return config?.demoAccountId || null;
 };
-

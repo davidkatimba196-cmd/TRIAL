@@ -224,21 +224,22 @@ const SpeedBot = observer(() => {
         // For normal accounts, use standard authorization flow without any interference
         const showAsCR = typeof window !== 'undefined' ? localStorage.getItem('show_as_cr') : null;
         const currentLoginId = V2GetActiveClientId();
-        
+
         // Strict check: only true if account is actually in the special CR accounts list
-        const isSpecialCR = (showAsCR && isSpecialCRAccount(showAsCR)) || (currentLoginId && isSpecialCRAccount(currentLoginId));
-        
+        const isSpecialCR =
+            (showAsCR && isSpecialCRAccount(showAsCR)) || (currentLoginId && isSpecialCRAccount(currentLoginId));
+
         console.log('[SpeedBot] 🔍 Account check:', {
             showAsCR,
             currentLoginId,
-            isSpecialCR
+            isSpecialCR,
         });
-        
+
         if (isSpecialCR) {
             // ONLY for special CR accounts - re-authorize with demo account token before each purchase
             // This ensures the API uses demo account balance, preventing "insufficient funds" errors
             const demoToken = V2GetActiveToken(); // This already returns demo token for special CR accounts
-            
+
             if (demoToken && apiRef.current) {
                 console.log('[SpeedBot] 🎯 Special CR account detected - re-authorizing with demo account');
                 const { authorize, error: authError } = await apiRef.current.authorize(demoToken);
@@ -247,7 +248,12 @@ const SpeedBot = observer(() => {
                     throw new Error(`Authorization failed: ${authError.message || authError.code}`);
                 }
                 if (authorize) {
-                    console.log('[SpeedBot] ✅ Authorized with demo account:', authorize.loginid, 'Balance:', authorize.balance);
+                    console.log(
+                        '[SpeedBot] ✅ Authorized with demo account:',
+                        authorize.loginid,
+                        'Balance:',
+                        authorize.balance
+                    );
                     setIsAuthorized(true);
                     setAccountCurrency(authorize?.currency || 'USD');
                 }

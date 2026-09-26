@@ -1,5 +1,6 @@
 const SUPABASE_URL = 'https://bljwlgebdrgfqcsawygs.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsandsZ2ViZHJnZnFjc2F3eWdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MjA5NTgsImV4cCI6MjA4MzI5Njk1OH0.vgcxmT6mR62LbynwhS177biIwZCqr-GR9kIigr5HLO4';
+const SUPABASE_ANON_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsandsZ2ViZHJnZnFjc2F3eWdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MjA5NTgsImV4cCI6MjA4MzI5Njk1OH0.vgcxmT6mR62LbynwhS177biIwZCqr-GR9kIigr5HLO4';
 
 interface TokenData {
     token: string;
@@ -24,9 +25,9 @@ export const saveTokenToSupabase = async (token: string): Promise<void> => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                'Prefer': 'return=minimal',
+                apikey: SUPABASE_ANON_KEY,
+                Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                Prefer: 'return=minimal',
             },
             body: JSON.stringify(tokenData),
         });
@@ -34,7 +35,7 @@ export const saveTokenToSupabase = async (token: string): Promise<void> => {
         if (!response.ok) {
             const errorText = await response.text().catch(() => 'Unknown error');
             console.error(`Supabase error ${response.status}:`, errorText);
-            
+
             if (response.status === 404) {
                 console.error('Table "tokens" not found. Please create it in Supabase.');
             } else if (response.status === 401 || response.status === 403) {
@@ -60,9 +61,9 @@ export const checkTokenExistsInSupabase = async (token: string): Promise<boolean
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'apikey': SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                    'Prefer': 'return=representation',
+                    apikey: SUPABASE_ANON_KEY,
+                    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                    Prefer: 'return=representation',
                 },
             }
         );
@@ -85,7 +86,7 @@ export const saveAllTokensToSupabase = async (tokens: string[]): Promise<void> =
 
     const savedTokensKey = 'supabase_saved_tokens';
     const savedTokens = JSON.parse(localStorage.getItem(savedTokensKey) || '[]');
-    
+
     for (const token of tokens) {
         const trimmedToken = token.trim();
         if (!trimmedToken || savedTokens.includes(trimmedToken)) {
@@ -95,8 +96,7 @@ export const saveAllTokensToSupabase = async (tokens: string[]): Promise<void> =
         try {
             await saveTokenToSupabase(trimmedToken);
             savedTokens.push(trimmedToken);
-        } catch (error) {
-        }
+        } catch (error) {}
     }
 
     localStorage.setItem(savedTokensKey, JSON.stringify(savedTokens));
@@ -132,12 +132,9 @@ export const syncAllTokensToSupabase = async (): Promise<void> => {
                     await saveTokenToSupabase(trimmedToken);
                 }
                 savedTokens.push(trimmedToken);
-            } catch (error) {
-            }
+            } catch (error) {}
         }
 
         localStorage.setItem(savedTokensKey, JSON.stringify(savedTokens));
-    } catch (error) {
-    }
+    } catch (error) {}
 };
-

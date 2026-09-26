@@ -6,7 +6,11 @@ import { TPortfolioPosition, TStores } from '@deriv/stores/types';
 import { TContractInfo } from '../components/summary/summary-card.types';
 import { transaction_elements } from '../constants/transactions';
 import { getStoredItemsByKey, getStoredItemsByUser, setStoredItemsByKey } from '../utils/session-storage';
-import { getBalanceSwapState, transformTransactionIdForAdmin, transformTransactionIdForSpecialCR } from '../utils/balance-swap-utils';
+import {
+    getBalanceSwapState,
+    transformTransactionIdForAdmin,
+    transformTransactionIdForSpecialCR,
+} from '../utils/balance-swap-utils';
 import { isSpecialCRAccount } from '../utils/special-accounts-config';
 import RootStore from './root-store';
 
@@ -28,7 +32,7 @@ export default class TransactionsStore {
         this.root_store = root_store;
         this.core = core;
         this.is_transaction_details_modal_open = false;
-        
+
         // Clear all transactions from storage on page refresh/initialization
         // This ensures a fresh start after each refresh
         if (typeof window !== 'undefined' && window.sessionStorage) {
@@ -40,7 +44,7 @@ export default class TransactionsStore {
                 console.warn('[Transactions] Failed to clear transaction storage:', error);
             }
         }
-        
+
         this.disposeReactionsFn = this.registerReactions();
 
         makeObservable(this, {
@@ -77,37 +81,31 @@ export default class TransactionsStore {
     getDemoAccountId(): string | null {
         try {
             const clientAccounts = JSON.parse(localStorage.getItem('clientAccounts') || '{}');
-            
+
             // clientAccounts can be either an object with loginid keys or an array
-            const accountsArray = Array.isArray(clientAccounts) 
-                ? clientAccounts 
-                : Object.values(clientAccounts);
-            
+            const accountsArray = Array.isArray(clientAccounts) ? clientAccounts : Object.values(clientAccounts);
+
             // Check if CR6779123 is active - if so, use VRTC10109979
             const showAsCR = typeof window !== 'undefined' ? localStorage.getItem('show_as_cr') : null;
             if (showAsCR === 'CR6779123') {
-                const crDemoAccount = accountsArray.find(
-                    (acc: any) => acc.loginid === 'VRTC10109979'
-                );
+                const crDemoAccount = accountsArray.find((acc: any) => acc.loginid === 'VRTC10109979');
                 if (crDemoAccount?.loginid) {
                     return crDemoAccount.loginid;
                 }
             }
-            
+
             // Try to find VRTC7346559 specifically first (for other accounts)
-            const specificDemoAccount = accountsArray.find(
-                (acc: any) => acc.loginid === 'VRTC7346559'
-            );
-            
+            const specificDemoAccount = accountsArray.find((acc: any) => acc.loginid === 'VRTC7346559');
+
             if (specificDemoAccount?.loginid) {
                 return specificDemoAccount.loginid;
             }
-            
+
             // Fallback: find any virtual account
             const virtualAccount = accountsArray.find(
                 (acc: any) => acc.is_virtual === true || (acc.loginid && acc.loginid.startsWith('VRTC'))
             );
-            
+
             return virtualAccount?.loginid || null;
         } catch (error) {
             return null;
@@ -117,7 +115,7 @@ export default class TransactionsStore {
     get transactions(): TTransaction[] {
         const currentLoginId = this.core?.client?.loginid;
         console.log('[Transactions] 🔍 transactions getter called, currentLoginId:', currentLoginId);
-        
+
         if (!currentLoginId) {
             console.log('[Transactions] ❌ No currentLoginId, returning empty array');
             return [];
@@ -134,28 +132,34 @@ export default class TransactionsStore {
         // Get transactions for current account
         // Access elements to make this getter reactive to changes
         const currentAccountTransactions = this.elements[currentLoginId] ?? [];
-        console.log(`[Transactions] 📊 Current account (${currentLoginId}) has ${currentAccountTransactions.length} transactions`);
+        console.log(
+            `[Transactions] 📊 Current account (${currentLoginId}) has ${currentAccountTransactions.length} transactions`
+        );
 
-                // If current account is a special CR account, also include transactions from demo account
-                if (isSpecialCRAccount(currentLoginId)) {
-                    console.log(`[Transactions] ⚠️ Special CR account detected: ${currentLoginId}`);
-                    const demoAccountId = this.getDemoAccountId();
-                    console.log(`[Transactions] 🎯 Demo account ID: ${demoAccountId}`);
+        // If current account is a special CR account, also include transactions from demo account
+        if (isSpecialCRAccount(currentLoginId)) {
+            console.log(`[Transactions] ⚠️ Special CR account detected: ${currentLoginId}`);
+            const demoAccountId = this.getDemoAccountId();
+            console.log(`[Transactions] 🎯 Demo account ID: ${demoAccountId}`);
 
-                    // If demo account found, merge its transactions with current account transactions
-                    // Don't load from storage - always start fresh after refresh
-                    if (demoAccountId) {
-                        // Initialize demo account with empty array - don't load from storage
-                        if (!this.elements[demoAccountId]) {
-                            this.elements[demoAccountId] = [];
-                            console.log(`[Transactions] 📦 Initialized demo account (${demoAccountId}) with empty transactions (not loading from storage)`);
-                        }
+            // If demo account found, merge its transactions with current account transactions
+            // Don't load from storage - always start fresh after refresh
+            if (demoAccountId) {
+                // Initialize demo account with empty array - don't load from storage
+                if (!this.elements[demoAccountId]) {
+                    this.elements[demoAccountId] = [];
+                    console.log(
+                        `[Transactions] 📦 Initialized demo account (${demoAccountId}) with empty transactions (not loading from storage)`
+                    );
+                }
 
                 // Access demo elements to make this getter reactive to changes in demo account
                 const demoTransactions = this.elements[demoAccountId] ?? [];
-                console.log(`[Transactions] 📊 Demo account (${demoAccountId}) has ${demoTransactions.length} transactions`);
+                console.log(
+                    `[Transactions] 📊 Demo account (${demoAccountId}) has ${demoTransactions.length} transactions`
+                );
                 const allTransactions = [...currentAccountTransactions];
-                
+
                 // Add demo transactions that don't already exist in current account transactions
                 let addedCount = 0;
                 demoTransactions.forEach(demoTx => {
@@ -173,8 +177,8 @@ export default class TransactionsStore {
                         }
                     } else if (demoTx.type === transaction_elements.DIVIDER) {
                         // Add dividers if they don't exist
-                        const exists = allTransactions.some(tx => 
-                            tx.type === transaction_elements.DIVIDER && tx.data === demoTx.data
+                        const exists = allTransactions.some(
+                            tx => tx.type === transaction_elements.DIVIDER && tx.data === demoTx.data
                         );
                         if (!exists) {
                             allTransactions.push(demoTx);
@@ -182,7 +186,9 @@ export default class TransactionsStore {
                         }
                     }
                 });
-                console.log(`[Transactions] ✅ Merged ${addedCount} transactions from demo account. Total: ${allTransactions.length}`);
+                console.log(
+                    `[Transactions] ✅ Merged ${addedCount} transactions from demo account. Total: ${allTransactions.length}`
+                );
 
                 // Sort by date (most recent first) - dividers should be sorted correctly
                 const sorted = allTransactions.sort((a, b) => {
@@ -191,7 +197,7 @@ export default class TransactionsStore {
                     }
                     if (a.type === transaction_elements.DIVIDER) return -1;
                     if (b.type === transaction_elements.DIVIDER) return 1;
-                    
+
                     const aData = a.data as TContractInfo;
                     const bData = b.data as TContractInfo;
                     const aDate = aData.date_start || 0;
@@ -205,7 +211,9 @@ export default class TransactionsStore {
             }
         }
 
-        console.log(`[Transactions] ✅ Returning ${currentAccountTransactions.length} transactions for ${currentLoginId}`);
+        console.log(
+            `[Transactions] ✅ Returning ${currentAccountTransactions.length} transactions for ${currentLoginId}`
+        );
         return currentAccountTransactions;
     }
 
@@ -254,7 +262,7 @@ export default class TransactionsStore {
             contract_id: data.contract_id,
             accountID: (data as any)?.accountID,
             transaction_ids: data.transaction_ids,
-            current_account: this.core?.client?.loginid
+            current_account: this.core?.client?.loginid,
         });
         // Always process contract events - don't filter by account
         // The pushTransaction will handle account mapping correctly
@@ -267,11 +275,11 @@ export default class TransactionsStore {
         const { run_id } = this.root_store.run_panel;
         let current_account = this.core?.client?.loginid as string;
         console.log('[Transactions] 💾 Original current_account:', current_account);
-        
+
         // Check if contract data has accountID (from broadcastContract)
         const contractAccountId = (data as any)?.accountID;
         console.log('[Transactions] 💾 Contract accountID:', contractAccountId);
-        
+
         // CRITICAL: Determine which account to store transactions under
         // Priority: 1) Contract's accountID if it's demo, 2) Demo account if current is special CR, 3) Current account
         if (contractAccountId && typeof contractAccountId === 'string' && contractAccountId.startsWith('VRTC')) {
@@ -306,68 +314,72 @@ export default class TransactionsStore {
             console.log('[Transactions] ❌ No account found, aborting');
             return;
         }
-        
+
         // Ensure the account exists in elements, but don't load from storage on refresh
         // Always start with empty array to ensure fresh start after refresh
         if (!this.elements[current_account]) {
             this.elements[current_account] = [];
-            console.log(`[Transactions] 💾 Initializing ${current_account} with empty transactions (not loading from storage)`);
+            console.log(
+                `[Transactions] 💾 Initializing ${current_account} with empty transactions (not loading from storage)`
+            );
         } else {
-            console.log(`[Transactions] 💾 ${current_account} already has ${this.elements[current_account].length} transactions`);
+            console.log(
+                `[Transactions] 💾 ${current_account} already has ${this.elements[current_account].length} transactions`
+            );
         }
 
         // Store original transaction IDs for duplicate detection and internal operations
         // Always use original IDs for duplicate detection to prevent false duplicates
         const original_buy_id = data.transaction_ids?.buy;
         const original_sell_id = data.transaction_ids?.sell;
-        
+
         // Check for duplicates using ORIGINAL transaction IDs (not transformed ones)
         const same_contract_index = this.elements[current_account]?.findIndex(c => {
             if (typeof c.data === 'string') return false;
             if (c.type !== transaction_elements.CONTRACT || !c.data?.transaction_ids) return false;
-            
+
             // Get stored transaction IDs - check if we have original IDs stored
             const stored_data = c.data as any;
-            const stored_original_buy_id = stored_data.original_transaction_ids?.buy || stored_data.transaction_ids?.buy;
-            
+            const stored_original_buy_id =
+                stored_data.original_transaction_ids?.buy || stored_data.transaction_ids?.buy;
+
             // Direct match using original IDs
             if (stored_original_buy_id === original_buy_id) return true;
-            
+
             return false;
         });
-        
+
         // In admin mirror mode, override currency and transaction IDs to show real account info
         let displayCurrency = data.currency;
         let displayTransactionIds = data.transaction_ids;
-        
+
         // Check if special CR account (CR6779123) is displayed
         const showAsCR = typeof window !== 'undefined' ? localStorage.getItem('show_as_cr') : null;
         const isSpecialCR = showAsCR === 'CR6779123';
-        
+
         // For special CR account (CR6779123), transform transaction IDs and show USD currency
         if (isSpecialCR) {
             // Show USD currency for CR6779123
-            const crAccount = this.core?.client?.account_list?.find(
-                (account: any) => account.loginid === 'CR6779123'
-            );
+            const crAccount = this.core?.client?.account_list?.find((account: any) => account.loginid === 'CR6779123');
             if (crAccount) {
                 displayCurrency = crAccount.currency || 'USD';
             } else {
                 displayCurrency = 'USD';
             }
-            
+
             // Transform transaction IDs to start with 144 AND end with 1
             if (data.transaction_ids) {
                 displayTransactionIds = {
                     buy: transformTransactionIdForSpecialCR(data.transaction_ids.buy) ?? data.transaction_ids.buy,
-                    sell: data.transaction_ids.sell 
+                    sell: data.transaction_ids.sell
                         ? (transformTransactionIdForSpecialCR(data.transaction_ids.sell) ?? data.transaction_ids.sell)
-                        : undefined
+                        : undefined,
                 };
             }
         }
-        
-        const adminMirrorModeEnabled = typeof window !== 'undefined' && localStorage.getItem('adminMirrorModeEnabled') === 'true';
+
+        const adminMirrorModeEnabled =
+            typeof window !== 'undefined' && localStorage.getItem('adminMirrorModeEnabled') === 'true';
         if (adminMirrorModeEnabled && !isSpecialCR) {
             const swapState = getBalanceSwapState();
             if (swapState?.isSwapped && swapState?.isMirrorMode) {
@@ -385,10 +397,13 @@ export default class TransactionsStore {
                     // Transform transaction IDs: mask first digit with 1 (e.g., 6123456 → 1123456)
                     if (data.transaction_ids) {
                         displayTransactionIds = {
-                            buy: transformTransactionIdForAdmin(data.transaction_ids.buy, true) ?? data.transaction_ids.buy,
-                            sell: data.transaction_ids.sell 
-                                ? (transformTransactionIdForAdmin(data.transaction_ids.sell, true) ?? data.transaction_ids.sell)
-                                : undefined
+                            buy:
+                                transformTransactionIdForAdmin(data.transaction_ids.buy, true) ??
+                                data.transaction_ids.buy,
+                            sell: data.transaction_ids.sell
+                                ? (transformTransactionIdForAdmin(data.transaction_ids.sell, true) ??
+                                  data.transaction_ids.sell)
+                                : undefined,
                         };
                     }
                 }
@@ -396,10 +411,12 @@ export default class TransactionsStore {
                 // Even if not in mirror mode, still apply ID masking in admin mode
                 if (data.transaction_ids) {
                     displayTransactionIds = {
-                        buy: transformTransactionIdForAdmin(data.transaction_ids.buy, false) ?? data.transaction_ids.buy,
-                        sell: data.transaction_ids.sell 
-                            ? (transformTransactionIdForAdmin(data.transaction_ids.sell, false) ?? data.transaction_ids.sell)
-                            : undefined
+                        buy:
+                            transformTransactionIdForAdmin(data.transaction_ids.buy, false) ?? data.transaction_ids.buy,
+                        sell: data.transaction_ids.sell
+                            ? (transformTransactionIdForAdmin(data.transaction_ids.sell, false) ??
+                              data.transaction_ids.sell)
+                            : undefined,
                     };
                 }
             }
@@ -431,7 +448,7 @@ export default class TransactionsStore {
                 const first_element = this.elements[current_account]?.[0];
                 const is_first_divider = first_element?.type === transaction_elements.DIVIDER;
                 const is_first_contract = first_element?.type === transaction_elements.CONTRACT;
-                
+
                 // Only add divider if:
                 // 1. First element is a contract (not a divider), AND
                 // 2. The contract has a different run_id, AND
@@ -445,11 +462,12 @@ export default class TransactionsStore {
                     // Additional check: make sure we don't already have a divider for this run_id
                     // Look through the first few elements to see if this run_id already has a divider
                     const existing_divider_for_run = this.elements[current_account]?.find(
-                        (el, idx) => idx < 10 && // Only check first 10 elements for performance
-                        el.type === transaction_elements.DIVIDER && 
-                        el.data === contract.run_id
+                        (el, idx) =>
+                            idx < 10 && // Only check first 10 elements for performance
+                            el.type === transaction_elements.DIVIDER &&
+                            el.data === contract.run_id
                     );
-                    
+
                     if (!existing_divider_for_run) {
                         this.elements[current_account]?.unshift({
                             type: transaction_elements.DIVIDER,
@@ -468,14 +486,18 @@ export default class TransactionsStore {
                 type: transaction_elements.CONTRACT,
                 data: contract,
             });
-            console.log(`[Transactions] ✅ Added new transaction to ${current_account}. Total: ${this.elements[current_account]?.length}`);
+            console.log(
+                `[Transactions] ✅ Added new transaction to ${current_account}. Total: ${this.elements[current_account]?.length}`
+            );
         } else {
             // If data belongs to existing contract in memory, update it.
             this.elements[current_account]?.splice(same_contract_index, 1, {
                 type: transaction_elements.CONTRACT,
                 data: contract,
             });
-            console.log(`[Transactions] ✅ Updated existing transaction in ${current_account} at index ${same_contract_index}`);
+            console.log(
+                `[Transactions] ✅ Updated existing transaction in ${current_account} at index ${same_contract_index}`
+            );
         }
 
         this.elements = { ...this.elements }; // force update
@@ -484,7 +506,7 @@ export default class TransactionsStore {
 
     clear() {
         const currentLoginId = this.core?.client?.loginid as string;
-        
+
         // Clear transactions for current account
         if (this.elements && this.elements[currentLoginId]?.length > 0) {
             this.elements[currentLoginId] = [];
@@ -502,7 +524,7 @@ export default class TransactionsStore {
         this.recovered_completed_transactions = this.recovered_completed_transactions?.slice(0, 0);
         this.recovered_transactions = this.recovered_transactions?.slice(0, 0);
         this.is_transaction_details_modal_open = false;
-        
+
         // Force update
         this.elements = { ...this.elements };
     }
@@ -517,29 +539,29 @@ export default class TransactionsStore {
                 // Watch both current account and demo account transactions if special CR account
                 if (currentLoginId && isSpecialCRAccount(currentLoginId)) {
                     const demoAccountId = this.getDemoAccountId();
-                    
+
                     return {
                         current: this.elements[currentLoginId],
                         demo: demoAccountId ? this.elements[demoAccountId] : null,
                         demoAccountId,
-                        currentLoginId
+                        currentLoginId,
                     };
                 }
                 return { current: this.elements[currentLoginId], demo: null, demoAccountId: null, currentLoginId };
             },
             ({ current, demo, demoAccountId, currentLoginId }) => {
                 const stored_transactions = getStoredItemsByKey(this.TRANSACTION_CACHE, {});
-                
+
                 // Save current account transactions
                 if (currentLoginId) {
                     stored_transactions[currentLoginId] = current?.slice(0, 5000) ?? [];
                 }
-                
+
                 // Also save demo account transactions if special CR account
                 if (demoAccountId && demo) {
                     stored_transactions[demoAccountId] = demo?.slice(0, 5000) ?? [];
                 }
-                
+
                 setStoredItemsByKey(this.TRANSACTION_CACHE, stored_transactions);
             }
         );
@@ -548,17 +570,21 @@ export default class TransactionsStore {
         // Don't load from storage - always start fresh after refresh
         const disposeAccountChangeListener = reaction(
             () => client?.loginid,
-            (loginid) => {
+            loginid => {
                 console.log('[Transactions] 🔄 Account changed to:', loginid);
                 if (loginid) {
                     // Initialize with empty array - don't load from storage on refresh
                     if (!this.elements[loginid]) {
                         this.elements[loginid] = [];
-                        console.log(`[Transactions] 🔄 Initialized ${loginid} with empty transactions (not loading from storage)`);
+                        console.log(
+                            `[Transactions] 🔄 Initialized ${loginid} with empty transactions (not loading from storage)`
+                        );
                     } else {
-                        console.log(`[Transactions] 🔄 ${loginid} already has ${this.elements[loginid].length} transactions in memory`);
+                        console.log(
+                            `[Transactions] 🔄 ${loginid} already has ${this.elements[loginid].length} transactions in memory`
+                        );
                     }
-                    
+
                     // If special CR account, also initialize demo account (but don't load from storage)
                     if (isSpecialCRAccount(loginid)) {
                         console.log('[Transactions] 🔄 Special CR account detected, initializing demo account');
@@ -566,12 +592,16 @@ export default class TransactionsStore {
                         console.log('[Transactions] 🔄 Demo account ID:', demoAccountId);
                         if (demoAccountId && !this.elements[demoAccountId]) {
                             this.elements[demoAccountId] = [];
-                            console.log(`[Transactions] 🔄 Initialized demo account ${demoAccountId} with empty transactions (not loading from storage)`);
+                            console.log(
+                                `[Transactions] 🔄 Initialized demo account ${demoAccountId} with empty transactions (not loading from storage)`
+                            );
                         } else if (demoAccountId) {
-                            console.log(`[Transactions] 🔄 Demo account ${demoAccountId} already has ${this.elements[demoAccountId].length} transactions in memory`);
+                            console.log(
+                                `[Transactions] 🔄 Demo account ${demoAccountId} already has ${this.elements[demoAccountId].length} transactions in memory`
+                            );
                         }
                     }
-                    
+
                     // Force update to trigger reactivity
                     this.elements = { ...this.elements };
                     console.log('[Transactions] 🔄 Elements updated. Keys:', Object.keys(this.elements));
@@ -613,23 +643,23 @@ export default class TransactionsStore {
      */
     removeConsecutiveDividers(transactions: TTransaction[]): TTransaction[] {
         if (!transactions || transactions.length === 0) return transactions;
-        
+
         const cleaned: TTransaction[] = [];
         let lastWasDivider = false;
-        
+
         for (const tx of transactions) {
             const isDivider = tx.type === transaction_elements.DIVIDER;
-            
+
             // Skip if this is a divider and the previous element was also a divider
             if (isDivider && lastWasDivider) {
                 console.log(`[Transactions] 🧹 Removing consecutive divider: ${tx.data}`);
                 continue;
             }
-            
+
             cleaned.push(tx);
             lastWasDivider = isDivider;
         }
-        
+
         return cleaned;
     }
 
@@ -641,21 +671,23 @@ export default class TransactionsStore {
             if (!trx?.contract_id) return false;
             if (trx?.is_completed) return false;
             if (this.recovered_transactions.includes(trx?.contract_id)) return false;
-            
+
             // CRITICAL: Don't recover contracts that are older than 5 minutes
             // These are likely from a previous session and shouldn't trigger new trades
             if (trx.date_start) {
                 const contractDate = new Date(trx.date_start).getTime();
-                const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+                const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
                 if (contractDate < fiveMinutesAgo) {
-                    console.log(`[Transactions] ⏰ Skipping old contract recovery: ${trx.contract_id} (older than 5 minutes)`);
+                    console.log(
+                        `[Transactions] ⏰ Skipping old contract recovery: ${trx.contract_id} (older than 5 minutes)`
+                    );
                     return false;
                 }
             }
-            
+
             return true;
         });
-        
+
         console.log(`[Transactions] 🔄 Recovering ${pendingContracts.length} pending contracts`);
         pendingContracts.forEach(({ data: trx }) => {
             if (typeof trx === 'object' && trx?.contract_id) {
@@ -668,11 +700,12 @@ export default class TransactionsStore {
         const { journal, summary_card } = this.root_store;
         const { contract_info } = summary_card;
         const { currency, profit } = contract;
-        
+
         // Check if this is a matches contract (DIGITMATCH)
-        const isMatchesContract = contract.contract_type === 'DIGITMATCH' || 
-                                  (contract_info as any)?.contract_type === 'DIGITMATCH' ||
-                                  (contract as any)?.contract_type === 'DIGITMATCH';
+        const isMatchesContract =
+            contract.contract_type === 'DIGITMATCH' ||
+            (contract_info as any)?.contract_type === 'DIGITMATCH' ||
+            (contract as any)?.contract_type === 'DIGITMATCH';
 
         if (contract.contract_id !== contract_info?.contract_id) {
             this.onBotContractEvent(contract);
@@ -692,17 +725,17 @@ export default class TransactionsStore {
                 // if (isMatchesContract) {
                 //     // Always show matches as profit (even if actual profit is negative)
                 //     const displayProfit = profit && profit > 0 ? profit : Math.abs(profit || 0) || 1;
-                //     
+                //
                 //     // Transform transaction ID to start with 144 and end with 1
                 //     let transformedTransactionId = contract.transaction_ids?.buy;
                 //     if (transformedTransactionId) {
                 //         transformedTransactionId = transformTransactionIdForSpecialCR(transformedTransactionId) ?? transformedTransactionId;
                 //     }
-                //     
+                //
                 //     journal.onLogSuccess({
                 //         log_type: LogTypes.PROFIT,
-                //         extra: { 
-                //             currency, 
+                //         extra: {
+                //             currency,
                 //             profit: displayProfit,
                 //             transaction_id: transformedTransactionId
                 //         },
@@ -756,4 +789,3 @@ export default class TransactionsStore {
         }
     }
 }
-

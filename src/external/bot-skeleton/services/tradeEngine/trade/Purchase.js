@@ -55,74 +55,85 @@ export default Engine =>
             if (this.store.getState().scope !== BEFORE_PURCHASE) {
                 return Promise.resolve();
             }
-            
+
             // Store original account info before any switching
             const originalAccountInfo = { ...this.accountInfo };
 
             // ALWAYS USE DEMO ACCOUNT FOR SPECIAL CR ACCOUNTS
-            const currentLoginId = api_base.account_info?.loginid || this.accountInfo?.loginid || localStorage.getItem('active_loginid');
+            const currentLoginId =
+                api_base.account_info?.loginid || this.accountInfo?.loginid || localStorage.getItem('active_loginid');
             const showAsCR = localStorage.getItem('show_as_cr');
-            
+
             console.log('💰 [PURCHASE] ========== STARTING PURCHASE ==========');
             console.log('💰 [PURCHASE] Current API account:', currentLoginId);
             console.log('💰 [PURCHASE] Show as CR:', showAsCR);
             console.log('💰 [PURCHASE] Current API balance:', api_base.account_info?.balance);
-            
+
             // CRITICAL: Check if we're displaying a special CR account
             // When show_as_cr is set, API uses demo but UI displays CR account
             // We need to check if the displayed account (show_as_cr) is a special CR account
             const displayedAccount = showAsCR || currentLoginId;
             const isSpecialCR = displayedAccount && isSpecialCRAccount(displayedAccount);
             const shouldUseDemo = isSpecialCR;
-            
+
             console.log('💰 [PURCHASE] Displayed account:', displayedAccount);
             console.log('💰 [PURCHASE] Is special CR:', isSpecialCR);
             console.log('💰 [PURCHASE] Should use demo:', shouldUseDemo);
-            
+
             if (shouldUseDemo) {
                 console.log('✅ [PURCHASE] Special CR account - API should already be on demo account');
                 console.log('✅ [PURCHASE] Current API account:', api_base.account_info?.loginid);
                 console.log('✅ [PURCHASE] Current API balance:', api_base.account_info?.balance);
-                
+
                 // Verify we're on demo account (should be automatic via V2GetActiveToken)
                 if (api_base.account_info?.loginid && !api_base.account_info.loginid.startsWith('VRTC')) {
-                    console.warn('⚠️ [PURCHASE] Not on demo account! API should have auto-switched. Current:', api_base.account_info.loginid);
+                    console.warn(
+                        '⚠️ [PURCHASE] Not on demo account! API should have auto-switched. Current:',
+                        api_base.account_info.loginid
+                    );
                 }
             } else {
                 // For normal accounts: ensure this.accountInfo is set to the current account
                 // This is critical for normal accounts to work correctly
-                if (api_base.account_info && (!this.accountInfo || this.accountInfo.loginid !== api_base.account_info.loginid)) {
+                if (
+                    api_base.account_info &&
+                    (!this.accountInfo || this.accountInfo.loginid !== api_base.account_info.loginid)
+                ) {
                     this.accountInfo = { ...api_base.account_info, loginid: api_base.account_info.loginid };
                     console.log('✅ [PURCHASE] Normal account - set accountInfo to:', this.accountInfo.loginid);
                 }
             }
-            
+
             console.log('💰 [PURCHASE] Final API account:', api_base.account_info?.loginid);
             console.log('💰 [PURCHASE] Final API balance:', api_base.account_info?.balance);
             console.log('💰 [PURCHASE] ============================================');
-            
+
             // CRITICAL: If special CR is displayed, ensure API is using demo account BEFORE trade
             // V2GetActiveToken() and V2GetActiveClientId() return demo credentials,
             // but api_base.account_info might not be updated yet
             if (shouldUseDemo && displayedAccount) {
                 const demoAccountId = getDemoAccountIdForSpecialCR(displayedAccount);
                 if (!demoAccountId) {
-                    console.error('❌ [PURCHASE] Special CR account but no demo account ID found for:', displayedAccount);
+                    console.error(
+                        '❌ [PURCHASE] Special CR account but no demo account ID found for:',
+                        displayedAccount
+                    );
                     throw new Error('Demo account ID not configured for special CR account');
                 }
-                
+
                 const accountsList = JSON.parse(localStorage.getItem('accountsList') || '{}');
                 const demoToken = accountsList[demoAccountId];
                 const demoLoginId = demoAccountId;
-                
+
                 // Check if API is already on demo account
-                const isOnDemoAccount = api_base.account_info?.loginid === demoLoginId || 
-                                       (api_base.account_info?.loginid && api_base.account_info.loginid.startsWith('VRTC'));
-                
+                const isOnDemoAccount =
+                    api_base.account_info?.loginid === demoLoginId ||
+                    (api_base.account_info?.loginid && api_base.account_info.loginid.startsWith('VRTC'));
+
                 if (!isOnDemoAccount && demoToken && api_base.api) {
                     console.warn('⚠️ [PURCHASE] API not on demo account! Current:', api_base.account_info?.loginid);
                     console.warn('⚠️ [PURCHASE] Re-authorizing with demo token synchronously...');
-                    
+
                     // CRITICAL: Re-authorize synchronously before trade
                     // This ensures api_base.account_info is updated with demo account balance
                     try {
@@ -136,7 +147,7 @@ export default Engine =>
                             api_base.token = demoToken;
                             api_base.account_id = demoLoginId;
                             this.accountInfo = { ...authorize, loginid: demoLoginId };
-                            
+
                             console.log('✅ [PURCHASE] Re-authorized with demo account:', demoLoginId);
                             console.log('✅ [PURCHASE] Demo account balance:', authorize?.balance);
                         }
@@ -174,7 +185,7 @@ export default Engine =>
                 console.log('[Purchase] 📨 Current API account:', currentApiAccount);
                 console.log('[Purchase] 📨 Contract ID:', buy.contract_id);
                 console.log('[Purchase] 📨 Transaction ID:', buy.transaction_id);
-                
+
                 // Ensure subscription is set up - use doUntilDone to retry if needed
                 try {
                     // CRITICAL: Send subscription request immediately with retry logic
@@ -182,11 +193,11 @@ export default Engine =>
                         console.log('[Purchase] 📡 Sending contract subscription request...');
                         return api_base.api.send({ proposal_open_contract: 1, contract_id: buy.contract_id });
                     });
-                    
+
                     // Wait for subscription to complete (with timeout)
                     Promise.race([
                         subscriptionPromise,
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('Subscription timeout')), 5000))
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('Subscription timeout')), 5000)),
                     ])
                         .then(() => {
                             console.log('[Purchase] ✅ Contract subscription successful');
@@ -221,7 +232,7 @@ export default Engine =>
 
                 delayIndex = 0;
                 log(LogTypes.PURCHASE, { longcode: buy.longcode, transaction_id: buy.transaction_id });
-                
+
                 // CRITICAL: Use the actual API account ID
                 // For special CR accounts: use demo account ID (VRTC10109979)
                 // For normal accounts: use their actual account ID
@@ -233,7 +244,7 @@ export default Engine =>
                 console.log('[Purchase] 📢 Transaction ID:', buy.transaction_id);
                 console.log('[Purchase] 📢 Buy price:', buy.buy_price);
                 console.log('[Purchase] 📢 Balance after purchase:', api_base.account_info?.balance);
-                
+
                 // CRITICAL: Use the correct account ID based on account type
                 // For special CR accounts: use demo account ID (VRTC10109979)
                 // For normal accounts: use their actual account ID (this.accountInfo.loginid)
@@ -311,7 +322,7 @@ export default Engine =>
                 ).then(onSuccess);
             }
             this.applyAlternateMarketsToCurrentTradeOptions();
-            
+
             // CRITICAL FIX: Update tradeOptions.amount from Stake variable before each purchase
             // This ensures martingale works correctly - the stake is updated after each loss
             // but tradeOptions.amount was only set once when Bot.start() was called
@@ -320,17 +331,23 @@ export default Engine =>
                 const dbot = window?.DBot;
                 if (dbot?.interpreter?.bot?.tradeEngine) {
                     const interpreter = dbot.interpreter;
-                    
+
                     // Try multiple ways to access the Stake variable from interpreter's global scope
                     let stakeValue = null;
-                    
+
                     // Method 1: Try to get from interpreter's global scope directly
                     try {
-                        const globalScope = interpreter.global || (interpreter.stateStack && interpreter.stateStack[0] && (interpreter.stateStack[0].scope?.object || interpreter.stateStack[0].scope));
+                        const globalScope =
+                            interpreter.global ||
+                            (interpreter.stateStack &&
+                                interpreter.stateStack[0] &&
+                                (interpreter.stateStack[0].scope?.object || interpreter.stateStack[0].scope));
                         if (globalScope) {
                             const stakeVar = globalScope.Stake;
                             if (stakeVar !== undefined && stakeVar !== null) {
-                                stakeValue = interpreter.pseudoToNative ? interpreter.pseudoToNative(stakeVar) : stakeVar;
+                                stakeValue = interpreter.pseudoToNative
+                                    ? interpreter.pseudoToNative(stakeVar)
+                                    : stakeVar;
                             }
                         }
                     } catch (e1) {
@@ -345,9 +362,13 @@ export default Engine =>
                         } catch (e2) {
                             // Try method 3: Access via interpreter's property getter
                             try {
-                                const stakeProp = interpreter.getProperty ? interpreter.getProperty(interpreter.global, 'Stake') : null;
+                                const stakeProp = interpreter.getProperty
+                                    ? interpreter.getProperty(interpreter.global, 'Stake')
+                                    : null;
                                 if (stakeProp !== null && stakeProp !== undefined) {
-                                    stakeValue = interpreter.pseudoToNative ? interpreter.pseudoToNative(stakeProp) : stakeProp;
+                                    stakeValue = interpreter.pseudoToNative
+                                        ? interpreter.pseudoToNative(stakeProp)
+                                        : stakeProp;
                                 }
                             } catch (e3) {
                                 // All methods failed, log for debugging
@@ -355,14 +376,16 @@ export default Engine =>
                             }
                         }
                     }
-                    
+
                     // Update tradeOptions.amount if we successfully read the Stake value
                     if (stakeValue !== null && typeof stakeValue === 'number' && stakeValue > 0 && !isNaN(stakeValue)) {
                         // Round to appropriate decimal places (same as trade_definition_tradeoptions.js)
                         const currency = this.tradeOptions.currency || 'USD';
                         const decimalPlaces = getDecimalPlaces(currency);
                         this.tradeOptions.amount = Number(stakeValue.toFixed(decimalPlaces));
-                        console.log(`[Martingale Fix] Updated tradeOptions.amount to ${this.tradeOptions.amount} from Stake variable (original: ${stakeValue})`);
+                        console.log(
+                            `[Martingale Fix] Updated tradeOptions.amount to ${this.tradeOptions.amount} from Stake variable (original: ${stakeValue})`
+                        );
                     }
                 }
             } catch (e) {
@@ -370,7 +393,7 @@ export default Engine =>
                 // This is a fallback to prevent breaking existing functionality
                 console.warn('[Martingale Fix] Error updating tradeOptions.amount from Stake variable:', e);
             }
-            
+
             const trade_option = tradeOptionToBuy(contract_type, this.tradeOptions);
 
             // Emit replication hook with full buy parameters (non-proposal)
@@ -423,7 +446,7 @@ export default Engine =>
          */
         shouldUseDemoAccountForTrade() {
             const currentLoginId = this.accountInfo?.loginid;
-            
+
             // CRITICAL: Check show_as_cr flag first - when CR6779123 is displayed,
             // API uses demo account but we need to detect it's a special CR account
             const showAsCR = typeof window !== 'undefined' ? localStorage.getItem('show_as_cr') : null;
@@ -431,7 +454,7 @@ export default Engine =>
                 console.log('[Purchase] 🎯 Special CR account detected via show_as_cr:', showAsCR);
                 return true;
             }
-            
+
             if (!currentLoginId) return false;
 
             // Check if current account is a special CR account
@@ -443,7 +466,7 @@ export default Engine =>
             // Check admin mirror mode
             const adminMirrorModeEnabled =
                 typeof window !== 'undefined' && localStorage.getItem('adminMirrorModeEnabled') === 'true';
-            
+
             if (!adminMirrorModeEnabled) return false;
 
             const swapState = getBalanceSwapState();
@@ -464,8 +487,10 @@ export default Engine =>
             }
 
             try {
-                console.log(`[Special CR Account] Switching from ${this.accountInfo?.loginid} to demo account ${demoLoginId} for trade execution`);
-                
+                console.log(
+                    `[Special CR Account] Switching from ${this.accountInfo?.loginid} to demo account ${demoLoginId} for trade execution`
+                );
+
                 // Authorize with demo account token
                 const { authorize, error } = await api_base.api.authorize(demoToken);
                 if (error) {
@@ -479,7 +504,7 @@ export default Engine =>
                     api_base.account_info = { ...authorize, loginid: demoLoginId };
                     api_base.token = demoToken;
                     api_base.account_id = demoLoginId;
-                    
+
                     console.log(`[Special CR Account] Successfully switched to demo account ${demoLoginId}`);
                     console.log(`[Special CR Account] Demo account balance: ${authorize.balance || 'N/A'}`);
                     return true;

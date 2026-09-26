@@ -76,7 +76,10 @@ export default function DesktopTransactionTable({
                     const { data, type } = transaction;
                     if (type === transaction_elements.CONTRACT) {
                         return (
-                            <div className={`${PARENT_CLASS}__table-row`} key={data?.display_transaction_ids?.buy ?? data?.transaction_ids?.buy}>
+                            <div
+                                className={`${PARENT_CLASS}__table-row`}
+                                key={data?.display_transaction_ids?.buy ?? data?.transaction_ids?.buy}
+                            >
                                 <TableCell
                                     label={
                                         data?.date_start &&
