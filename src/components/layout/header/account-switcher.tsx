@@ -44,11 +44,12 @@ const RenderAccountItems = ({
     const adminMirrorModeEnabled =
         typeof window !== 'undefined' && localStorage.getItem('adminMirrorModeEnabled') === 'true';
     const swapState = getBalanceSwapState();
-    
+
     // TEMPORARILY DISABLED: Admin mirror mode - showing real accounts for now
     // TODO: Re-enable admin mirror mode later
     const ADMIN_MIRROR_MODE_DISABLED = true;
-    const isAdminMode = !ADMIN_MIRROR_MODE_DISABLED && adminMirrorModeEnabled && swapState?.isSwapped && swapState?.isMirrorMode;
+    const isAdminMode =
+        !ADMIN_MIRROR_MODE_DISABLED && adminMirrorModeEnabled && swapState?.isSwapped && swapState?.isMirrorMode;
 
     useEffect(() => {
         // Update the max-height from the accordion content set from deriv-com/ui
@@ -75,7 +76,7 @@ const RenderAccountItems = ({
             }
             switchAccount(loginId);
         };
-        
+
         return (
             <>
                 <DemoAccounts
@@ -213,52 +214,58 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
         console.log('🔄 [ACCOUNT SWITCH] Starting switch to:', loginIdStr);
         console.log('🔄 [ACCOUNT SWITCH] Current active:', activeAccount?.loginid);
         console.log('🔄 [ACCOUNT SWITCH] Current show_as_cr:', localStorage.getItem('show_as_cr'));
-        
+
         // Normalize loginId - handle both string and number
         const normalizedLoginId = loginIdStr;
-        
+
         // Check if we're already on this account
         // For CR6779123, also check if show_as_cr is set and we're on demo
         const currentShowAsCR = localStorage.getItem('show_as_cr');
         const isCurrentlyOnCR = currentShowAsCR === 'CR6779123' && activeAccount?.loginid === 'VRTC10109979';
         const isSwitchingToCR = normalizedLoginId === 'CR6779123';
-        
+
         if (normalizedLoginId === activeAccount?.loginid || (isCurrentlyOnCR && isSwitchingToCR)) {
             console.log('🔄 [ACCOUNT SWITCH] Same account, skipping');
             return;
         }
-        
+
         const account_list = JSON.parse(localStorage.getItem('accountsList') ?? '{}');
         console.log('🔄 [ACCOUNT SWITCH] Available accounts:', Object.keys(account_list));
-        
+
         // Check if admin mirror mode is enabled
         const adminMirrorModeEnabled =
             typeof window !== 'undefined' && localStorage.getItem('adminMirrorModeEnabled') === 'true';
         const swapState = getBalanceSwapState();
-        
+
         // TEMPORARILY DISABLED: Admin mirror mode - showing real accounts for now
         // TODO: Re-enable admin mirror mode later
         const ADMIN_MIRROR_MODE_DISABLED = true;
-        
+
         let actualLoginId = normalizedLoginId;
         let token = account_list[normalizedLoginId];
         let account_param: string;
-        
+
         // TEMPORARILY DISABLED: If admin mode is enabled, all accounts shown are demo accounts
         // For now, skip this logic and use normal account switching
-        if (false && adminMirrorModeEnabled && swapState?.isSwapped && swapState?.isMirrorMode && !ADMIN_MIRROR_MODE_DISABLED) {
+        if (
+            false &&
+            adminMirrorModeEnabled &&
+            swapState?.isSwapped &&
+            swapState?.isMirrorMode &&
+            !ADMIN_MIRROR_MODE_DISABLED
+        ) {
             const selected_account = modifiedAccountList.find(acc => acc.loginid === normalizedLoginId);
             if (!selected_account) return;
-            
+
             // In admin mode, all accounts are demo accounts
             // Always use demo account for trading
             actualLoginId = selected_account.is_virtual ? normalizedLoginId : swapState.demoAccount.loginId;
             token = account_list[actualLoginId] || account_list[swapState.demoAccount.loginId];
-            
+
             // Check which tab we're switching from
-            const switchingFromRealTab = typeof window !== 'undefined' && 
-                localStorage.getItem('adminSwitchingFromRealTab') === 'true';
-            
+            const switchingFromRealTab =
+                typeof window !== 'undefined' && localStorage.getItem('adminSwitchingFromRealTab') === 'true';
+
             if (switchingFromRealTab && selected_account.is_virtual) {
                 // From "Real" tab clicking demo - show shared balance with real flag
                 localStorage.setItem('adminRealAccountUsingDemo', 'true');
@@ -272,7 +279,7 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
                 localStorage.removeItem('adminRealAccountDisplayLoginId');
                 account_param = 'demo';
             }
-            
+
             // Clean up the tab tracking flag
             if (typeof window !== 'undefined') {
                 localStorage.removeItem('adminSwitchingFromRealTab');
@@ -281,7 +288,7 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
             // Normal mode - check if it's CR6779123 (special account)
             // Try to find account in modifiedAccountList first
             let selected_account = modifiedAccountList.find(acc => acc.loginid === normalizedLoginId);
-            
+
             // If not found, try to find in accountList
             if (!selected_account) {
                 const accountFromList = accountList?.find(acc => acc.loginid === normalizedLoginId);
@@ -293,43 +300,43 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
                     } as any;
                 }
             }
-            
+
             if (!selected_account) {
                 console.error('❌ [ACCOUNT SWITCH] Account not found:', normalizedLoginId);
                 return;
             }
-            
+
             console.log('📋 [ACCOUNT SWITCH] Selected account:', {
                 loginid: selected_account.loginid,
                 is_virtual: selected_account.is_virtual,
-                currency: selected_account.currency
+                currency: selected_account.currency,
             });
-            
+
             // Check if switching to CR6779123
             const isSwitchingToCR6779123 = normalizedLoginId === 'CR6779123';
             const currentShowAsCR = localStorage.getItem('show_as_cr');
-            
+
             console.log('🔍 [ACCOUNT SWITCH] Checking CR6779123:', {
                 isSwitchingToCR6779123,
                 currentShowAsCR,
-                normalizedLoginId
+                normalizedLoginId,
             });
-            
+
             // SIMPLE: For CR6779123, just use demo account directly
             if (isSwitchingToCR6779123) {
                 console.log('🎯 [CR6779123] Switching to CR6779123 - Using DEMO account for trading');
                 const demoToken = account_list['VRTC10109979'];
-                
+
                 if (demoToken) {
                     // Use demo token and demo loginid for API
                     token = demoToken;
                     actualLoginId = 'VRTC10109979'; // API uses demo loginid
                     // Use CR account currency (USD) for URL parameter, not 'demo'
                     account_param = selected_account.currency || 'USD';
-                    
+
                     // Flag to display CR6779123 in UI
                     localStorage.setItem('show_as_cr', 'CR6779123');
-                    
+
                     console.log('✅ [CR6779123] Set up complete:');
                     console.log('   - API will use: VRTC10109979');
                     console.log('   - UI will display: CR6779123');
@@ -344,10 +351,10 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
                 // Switching to ANY other account (demo or real) - clear CR flag and use normal account
                 console.log('📝 [SWITCH] Switching to account:', normalizedLoginId);
                 console.log('📝 [SWITCH] Clearing show_as_cr flag (was:', currentShowAsCR, ')');
-                
+
                 // CRITICAL: Always clear the flag when switching away from CR6779123
                 localStorage.removeItem('show_as_cr');
-                
+
                 // Use the actual account token and loginid
                 token = account_list[normalizedLoginId];
                 if (!token) {
@@ -356,34 +363,34 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
                 }
                 actualLoginId = normalizedLoginId;
                 account_param = selected_account.is_virtual ? 'demo' : selected_account.currency;
-                
+
                 console.log('✅ [SWITCH] Will use account:', actualLoginId, 'param:', account_param);
             }
-            
+
             localStorage.removeItem('adminRealAccountUsingDemo');
             localStorage.removeItem('adminRealAccountDisplayLoginId');
         }
-        
+
         if (!token) {
             console.error('❌ [ACCOUNT SWITCH] No token found!');
             return;
         }
-        
+
         console.log('💾 [ACCOUNT SWITCH] Saving to localStorage:');
         console.log('   - authToken:', token.substring(0, 10) + '...');
         console.log('   - active_loginid:', actualLoginId);
         console.log('   - show_as_cr:', localStorage.getItem('show_as_cr') || 'null');
         console.log('   - URL param:', account_param);
-        
+
         localStorage.setItem('authToken', token);
         localStorage.setItem('active_loginid', actualLoginId);
-        
+
         console.log('🔌 [ACCOUNT SWITCH] Initializing API...');
-        
+
         // Initialize API and wait for it
         try {
             await api_base?.init(true);
-            
+
             // Wait for authorization to complete
             let authAttempts = 0;
             const maxAuthAttempts = 10;
@@ -391,18 +398,18 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 authAttempts++;
             }
-            
+
             if (!api_base?.is_authorized) {
                 console.warn('⚠️ [ACCOUNT SWITCH] API not authorized after init, but continuing...');
             }
-            
+
             console.log('✅ [ACCOUNT SWITCH] API initialized and authorized');
             console.log('✅ [ACCOUNT SWITCH] API account_info.loginid:', api_base.account_info?.loginid);
         } catch (error) {
             console.error('❌ [ACCOUNT SWITCH] API initialization error:', error);
             // Don't throw - allow UI to update even if API init has issues
         }
-        
+
         // CRITICAL: After API init, ensure setLoginId is called to update display
         // This is especially important for CR6779123 where we need to display CR but API uses demo
         if (client) {
@@ -410,12 +417,14 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
             setTimeout(() => {
                 // For CR6779123, we want to display CR6779123 in UI, not the demo account
                 // The setLoginId function will handle the show_as_cr flag internally
-                const displayLoginId = isSwitchingToCR6779123 ? 'CR6779123' : (api_base.account_info?.loginid || actualLoginId);
+                const displayLoginId = isSwitchingToCR6779123
+                    ? 'CR6779123'
+                    : api_base.account_info?.loginid || actualLoginId;
                 console.log('🔄 [ACCOUNT SWITCH] Calling setLoginId with:', displayLoginId);
                 console.log('🔄 [ACCOUNT SWITCH] show_as_cr flag:', localStorage.getItem('show_as_cr'));
                 client.setLoginId(displayLoginId);
                 console.log('✅ [ACCOUNT SWITCH] setLoginId called, client.loginid is now:', client.loginid);
-                
+
                 // CRITICAL: Update balance after account switch
                 // Wait a bit more for balance data to be available
                 setTimeout(() => {
@@ -443,11 +452,11 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
                 }, 300);
             }, 200);
         }
-        
+
         const search_params = new URLSearchParams(window.location.search);
         search_params.set('account', account_param);
         window.history.pushState({}, '', `${window.location.pathname}?${search_params.toString()}`);
-        
+
         console.log('✅ [ACCOUNT SWITCH] Complete!');
         console.log('   - API LoginID:', actualLoginId);
         console.log('   - Will Display As:', localStorage.getItem('show_as_cr') || actualLoginId);
@@ -483,7 +492,9 @@ const AccountSwitcher = observer(({ activeAccount }: TAccountSwitcher) => {
                         <RenderAccountItems
                             modifiedCRAccountList={modifiedCRAccountList as TModifiedAccount[]}
                             modifiedMFAccountList={modifiedMFAccountList as TModifiedAccount[]}
-                            modifiedVRTCRAccountList={isAdminMode ? modifiedVRTCRAccountList as TModifiedAccount[] : undefined}
+                            modifiedVRTCRAccountList={
+                                isAdminMode ? (modifiedVRTCRAccountList as TModifiedAccount[]) : undefined
+                            }
                             switchAccount={switchAccount}
                             activeLoginId={activeAccount?.loginid}
                             client={client}

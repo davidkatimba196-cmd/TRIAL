@@ -63,13 +63,13 @@ const CoreStoreProvider: React.FC<{ children: React.ReactNode }> = observer(({ c
         // Check if show_as_cr is set - if so, use CR6779123 for balance lookup
         const showAsCR = typeof window !== 'undefined' ? localStorage.getItem('show_as_cr') : null;
         const balanceLookupLoginId = showAsCR || activeAccount?.loginid;
-        
+
         const currentBalanceData = client?.all_accounts_balance?.accounts?.[balanceLookupLoginId ?? ''];
         if (currentBalanceData) {
             const balance = currentBalanceData.balance.toFixed(getDecimalPlaces(currentBalanceData.currency));
             client?.setBalance(balance);
             client?.setCurrency(currentBalanceData.currency);
-            
+
             // Cache balance for faster loading on refresh
             if (typeof window !== 'undefined' && balanceLookupLoginId) {
                 try {
@@ -77,7 +77,7 @@ const CoreStoreProvider: React.FC<{ children: React.ReactNode }> = observer(({ c
                     cachedBalances[balanceLookupLoginId] = {
                         balance,
                         currency: currentBalanceData.currency,
-                        timestamp: Date.now()
+                        timestamp: Date.now(),
                     };
                     sessionStorage.setItem('cached_balances', JSON.stringify(cachedBalances));
                 } catch (e) {
@@ -91,7 +91,7 @@ const CoreStoreProvider: React.FC<{ children: React.ReactNode }> = observer(({ c
                     const cachedBalances = JSON.parse(sessionStorage.getItem('cached_balances') || '{}');
                     const cached = cachedBalances[balanceLookupLoginId];
                     // Use cached balance if it's less than 5 minutes old
-                    if (cached && (Date.now() - cached.timestamp) < 5 * 60 * 1000) {
+                    if (cached && Date.now() - cached.timestamp < 5 * 60 * 1000) {
                         client?.setBalance(cached.balance);
                         client?.setCurrency(cached.currency || activeAccount.currency || 'USD');
                     } else {
@@ -116,48 +116,63 @@ const CoreStoreProvider: React.FC<{ children: React.ReactNode }> = observer(({ c
             // Check if show_as_cr is set - if so, use CR6779123 for display
             const showAsCR = typeof window !== 'undefined' ? localStorage.getItem('show_as_cr') : null;
             const displayLoginId = showAsCR || activeLoginid;
-            
+
             client?.setLoginId(displayLoginId);
             client?.setAccountList(accountList);
             client?.setIsLoggedIn(true);
-            
+
             // CRITICAL: If show_as_cr is set and API is already initialized, ensure it's authorized with demo account
             // This ensures the API is ready for trading immediately when the page loads
             if (showAsCR === 'CR6779123' && api_base?.api && isAuthorized) {
                 const currentApiAccount = api_base.account_info?.loginid;
                 const expectedDemoAccount = 'VRTC10109979';
-                
+
                 // Only re-authorize if not already on demo account
                 if (currentApiAccount !== expectedDemoAccount) {
-                    console.log('[CoreStoreProvider] 🔄 show_as_cr is set but API is not on demo account - re-authorizing...');
+                    console.log(
+                        '[CoreStoreProvider] 🔄 show_as_cr is set but API is not on demo account - re-authorizing...'
+                    );
                     const accountsList = JSON.parse(localStorage.getItem('accountsList') || '{}');
                     const demoToken = accountsList[expectedDemoAccount];
-                    
+
                     if (demoToken) {
                         // Re-authorize with demo token in background (don't block UI)
-                        api_base.api.authorize(demoToken).then(({ authorize, error }) => {
-                            if (error) {
-                                console.error('[CoreStoreProvider] ❌ Failed to re-authorize with demo token:', error);
-                            } else if (authorize) {
-                                api_base.account_info = { ...authorize, loginid: expectedDemoAccount };
-                                api_base.token = demoToken;
-                                api_base.account_id = expectedDemoAccount;
-                                console.log('[CoreStoreProvider] ✅ Re-authorized API with demo account:', expectedDemoAccount);
-                            }
-                        }).catch(err => {
-                            console.error('[CoreStoreProvider] ❌ Error re-authorizing:', err);
-                        });
+                        api_base.api
+                            .authorize(demoToken)
+                            .then(({ authorize, error }) => {
+                                if (error) {
+                                    console.error(
+                                        '[CoreStoreProvider] ❌ Failed to re-authorize with demo token:',
+                                        error
+                                    );
+                                } else if (authorize) {
+                                    api_base.account_info = { ...authorize, loginid: expectedDemoAccount };
+                                    api_base.token = demoToken;
+                                    api_base.account_id = expectedDemoAccount;
+                                    console.log(
+                                        '[CoreStoreProvider] ✅ Re-authorized API with demo account:',
+                                        expectedDemoAccount
+                                    );
+                                }
+                            })
+                            .catch(err => {
+                                console.error('[CoreStoreProvider] ❌ Error re-authorizing:', err);
+                            });
                     }
                 }
             }
-            
+
             // Load cached balance immediately on mount for faster display on refresh
-            if (typeof window !== 'undefined' && displayLoginId && !client?.all_accounts_balance?.accounts?.[displayLoginId]) {
+            if (
+                typeof window !== 'undefined' &&
+                displayLoginId &&
+                !client?.all_accounts_balance?.accounts?.[displayLoginId]
+            ) {
                 try {
                     const cachedBalances = JSON.parse(sessionStorage.getItem('cached_balances') || '{}');
                     const cached = cachedBalances[displayLoginId];
                     // Use cached balance if it's less than 5 minutes old
-                    if (cached && (Date.now() - cached.timestamp) < 5 * 60 * 1000) {
+                    if (cached && Date.now() - cached.timestamp < 5 * 60 * 1000) {
                         client?.setBalance(cached.balance);
                         client?.setCurrency(cached.currency || activeAccount.currency || 'USD');
                     }
@@ -313,17 +328,17 @@ const CoreStoreProvider: React.FC<{ children: React.ReactNode }> = observer(({ c
                                     swappedAccounts[swapState.demoAccount.loginId]?.balance ||
                                     parseFloat(swapState.demoAccount.originalBalance) ||
                                     0;
-                                
+
                                 // Get shared amount from localStorage (15% of demo balance)
                                 const sharedAmountKey = `sharedAmount_${swapState.demoAccount.loginId}`;
                                 let sharedAmount = parseFloat(localStorage.getItem(sharedAmountKey) || '0');
-                                
+
                                 // If shared amount not found, calculate it (15% of current demo balance)
                                 if (!sharedAmount || sharedAmount === 0) {
                                     sharedAmount = demoBalance * 0.15;
                                     localStorage.setItem(sharedAmountKey, sharedAmount.toFixed(2));
                                 }
-                                
+
                                 swappedAccounts[swapState.realAccount.loginId] = {
                                     ...swappedAccounts[swapState.realAccount.loginId],
                                     balance: sharedAmount, // Real shows shared amount (15% of demo)
@@ -408,17 +423,17 @@ const CoreStoreProvider: React.FC<{ children: React.ReactNode }> = observer(({ c
                             [balance.loginid]: currentLoggedInBalance,
                         },
                     };
-                    
+
                     // CRITICAL: If demo account balance updated, recalculate special CR account balances
                     // Check if this is the demo account used by special CR accounts
                     const isDemoAccountForSpecialCR = SPECIAL_CR_ACCOUNTS.some(
                         acc => acc.demoAccountId === balance.loginid
                     );
-                    
+
                     if (isDemoAccountForSpecialCR) {
                         // Recalculate special CR account balances based on updated demo balance
                         const demoBalance = updatedBalance;
-                        SPECIAL_CR_ACCOUNTS.forEach((specialAccount) => {
+                        SPECIAL_CR_ACCOUNTS.forEach(specialAccount => {
                             const { loginid, subtract } = specialAccount;
                             if (specialAccount.demoAccountId === balance.loginid) {
                                 // Ensure account entry exists
@@ -433,11 +448,13 @@ const CoreStoreProvider: React.FC<{ children: React.ReactNode }> = observer(({ c
                                 // Recalculate CR balance: demo_balance - subtract_amount
                                 const calculatedBalance = demoBalance - subtract;
                                 updatedAccounts.accounts[loginid].balance = calculatedBalance;
-                                console.log(`[Balance Update] 💰 ${loginid} balance recalculated: ${demoBalance} - ${subtract} = ${calculatedBalance}`);
+                                console.log(
+                                    `[Balance Update] 💰 ${loginid} balance recalculated: ${demoBalance} - ${subtract} = ${calculatedBalance}`
+                                );
                             }
                         });
                     }
-                    
+
                     client.setAllAccountsBalance(updatedAccounts);
                 }
             }

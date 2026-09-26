@@ -99,7 +99,7 @@ const CallbackPage = () => {
                     localStorage.setItem('authToken', tokens.token1);
                     localStorage.setItem('active_loginid', tokens.acct1);
                 }
-                
+
                 // CRITICAL: Set logged_state cookie to ensure session persists
                 Cookies.set('logged_state', 'true', {
                     domain: window.location.hostname,
@@ -107,13 +107,13 @@ const CallbackPage = () => {
                     path: '/',
                     secure: window.location.protocol === 'https:',
                 });
-                
+
                 // Determine the appropriate currency to use
                 const selected_currency = getSelectedCurrency(tokens, clientAccounts, state);
 
                 // Small delay to ensure localStorage is fully written before redirect
                 await new Promise(resolve => setTimeout(resolve, 100));
-                
+
                 window.location.replace(window.location.origin + `/?account=${selected_currency}`);
             }}
             renderReturnButton={() => {

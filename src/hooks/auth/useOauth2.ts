@@ -57,10 +57,10 @@ export const useOauth2 = ({
 
     const logoutHandler = async () => {
         client?.setIsLoggingOut(true);
-        
+
         // CRITICAL: Clear all data FIRST, then redirect immediately
         // Don't wait for async operations - just clear and redirect
-        
+
         // Clear logged_state cookie to prevent auto-login
         const domain = window.location.hostname.split('.').slice(-2).join('.');
         Cookies.set('logged_state', 'false', {
@@ -77,7 +77,7 @@ export const useOauth2 = ({
         });
         Cookies.remove('logged_state', { domain: '.' + domain, path: '/' });
         Cookies.remove('logged_state', { domain: window.location.hostname, path: '/' });
-        
+
         // Clear all localStorage
         localStorage.removeItem('active_loginid');
         localStorage.removeItem('accountsList');
@@ -93,14 +93,14 @@ export const useOauth2 = ({
         localStorage.removeItem('client.accounts');
         localStorage.removeItem('client.country');
         localStorage.removeItem('callback_token');
-        
+
         // Clear sessionStorage
         if (typeof window !== 'undefined' && window.sessionStorage) {
             sessionStorage.clear();
         }
-        
+
         Analytics.reset();
-        
+
         // Clear client state
         if (client) {
             client.account_list = [];
@@ -111,7 +111,7 @@ export const useOauth2 = ({
             client.currency = 'USD';
             client._all_accounts_balance = null;
         }
-        
+
         // Call OAuth2Logout and client.logout in background (don't wait)
         // But redirect immediately
         OAuth2Logout({
@@ -119,9 +119,9 @@ export const useOauth2 = ({
             WSLogoutAndRedirect: handleLogout ?? (() => Promise.resolve()),
             postLogoutRedirectUri: window.location.origin,
         }).catch(() => {});
-        
+
         client?.logout().catch(() => {});
-        
+
         // CRITICAL: Force immediate redirect - don't wait for anything
         window.location.replace('/');
     };

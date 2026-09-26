@@ -76,7 +76,9 @@ const Dtrader = observer(() => {
         } else {
             setIsAuthenticated(false);
             // Load dtrader without authentication (will prompt login)
-            setIframeSrc('https://deriv-dtrader.vercel.app/dtrader?chart_type=area&interval=1t&symbol=1HZ100V&trade_type=over_under');
+            setIframeSrc(
+                'https://deriv-dtrader.vercel.app/dtrader?chart_type=area&interval=1t&symbol=1HZ100V&trade_type=over_under'
+            );
         }
     }, [buildIframeUrl]);
 
@@ -93,13 +95,21 @@ const Dtrader = observer(() => {
                 buildIframeUrl(token, activeLoginId);
             } else if (isAuthenticated) {
                 setIsAuthenticated(false);
-                setIframeSrc('https://deriv-dtrader.vercel.app/dtrader?chart_type=area&interval=1t&symbol=1HZ100V&trade_type=over_under');
+                setIframeSrc(
+                    'https://deriv-dtrader.vercel.app/dtrader?chart_type=area&interval=1t&symbol=1HZ100V&trade_type=over_under'
+                );
             }
         };
 
         // Listen for storage changes (account switches from other tabs)
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'authToken' || e.key === 'active_loginid' || e.key === 'clientAccounts' || e.key === 'accountsList' || e.key === 'show_as_cr') {
+            if (
+                e.key === 'authToken' ||
+                e.key === 'active_loginid' ||
+                e.key === 'clientAccounts' ||
+                e.key === 'accountsList' ||
+                e.key === 'show_as_cr'
+            ) {
                 checkAuthAndUpdate();
             }
         };
@@ -124,13 +134,7 @@ const Dtrader = observer(() => {
         );
     }
 
-    return (
-        <IframeWrapper
-            src={iframeSrc}
-            title='DTrader'
-            className='dtrader-container'
-        />
-    );
+    return <IframeWrapper src={iframeSrc} title='DTrader' className='dtrader-container' />;
 });
 
 export default Dtrader;

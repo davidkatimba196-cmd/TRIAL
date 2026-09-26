@@ -68,7 +68,7 @@ const setLocalStorageToken = async (
                     if (filteredTokens.length) {
                         localStorage.setItem('authToken', filteredTokens[0].token);
                         localStorage.setItem('active_loginid', filteredTokens[0].loginid);
-                        
+
                         // CRITICAL: Set logged_state cookie to ensure session persists
                         Cookies.set('logged_state', 'true', {
                             domain: window.location.hostname,
@@ -84,7 +84,7 @@ const setLocalStorageToken = async (
             // Fallback: Set tokens even if API authorization fails
             localStorage.setItem('authToken', loginInfo[0].token);
             localStorage.setItem('active_loginid', loginInfo[0].loginid);
-            
+
             // CRITICAL: Set logged_state cookie to ensure session persists
             Cookies.set('logged_state', 'true', {
                 domain: window.location.hostname,

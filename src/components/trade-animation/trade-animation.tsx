@@ -26,7 +26,7 @@ const TradeAnimation = observer(({ className, should_show_overlay }: TTradeAnima
     const { active_tab } = dashboard;
     const { has_active_bot, has_saved_bots } = blockly_store;
     const { isMobile } = useDevice();
-    
+
     // Don't show TradeAnimation (Run button) on DTrader tab - manual trading only
     if (active_tab === DBOT_TABS.DTRADER) {
         return null;

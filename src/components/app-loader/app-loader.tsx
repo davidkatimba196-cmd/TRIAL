@@ -81,7 +81,13 @@ const AppLoader: React.FC<AppLoaderProps> = ({ onLoadingComplete, duration = 120
                     <div className='smart-loader__header'>
                         <div className='smart-loader__brand'>
                             <div className='smart-loader__brand-mark' aria-hidden='true'>
-                                <svg width='22' height='22' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                                <svg
+                                    width='22'
+                                    height='22'
+                                    viewBox='0 0 24 24'
+                                    fill='none'
+                                    xmlns='http://www.w3.org/2000/svg'
+                                >
                                     <path
                                         d='M4 19V5M4 19H20M7 15L11 11L14 14L19 9'
                                         stroke='currentColor'
@@ -147,7 +153,9 @@ const AppLoader: React.FC<AppLoaderProps> = ({ onLoadingComplete, duration = 120
 
                     <div className='smart-loader__status'>
                         <div className='smart-loader__status-line'>Establishing secure connection...</div>
-                        <div className='smart-loader__status-sub'>{messages[messageIndex]?.title || 'Connecting...'}</div>
+                        <div className='smart-loader__status-sub'>
+                            {messages[messageIndex]?.title || 'Connecting...'}
+                        </div>
                     </div>
 
                     <div className='progress-wrapper'>

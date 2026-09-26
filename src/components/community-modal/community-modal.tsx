@@ -9,7 +9,7 @@ const CommunityModal: React.FC = () => {
         // Don't show modal on page refresh - only show on first visit
         // Check if this is a page refresh by checking if we have session data
         const hasSessionData = sessionStorage.getItem('has_visited') === 'true';
-        
+
         if (!hasSessionData) {
             // First visit - show modal and mark as visited
             sessionStorage.setItem('has_visited', 'true');

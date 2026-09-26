@@ -76,7 +76,8 @@ export const V2GetActiveToken = () => {
     // This ensures all trades are executed on demo account, even when CR account is displayed
     const showAsCR = typeof window !== 'undefined' ? localStorage.getItem('show_as_cr') : null;
     if (showAsCR) {
-        const accountsList = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('accountsList') || '{}') : {};
+        const accountsList =
+            typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('accountsList') || '{}') : {};
         const demoToken = accountsList['VRTC10109979'];
         if (demoToken) {
             console.log('[V2GetActiveToken] 🎯 Using demo token (show_as_cr:', showAsCR, ')');
